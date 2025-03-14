@@ -94,7 +94,7 @@ if response.status_code == 200:
         # Controles para mudar o mês
         html.Div([
             html.Button("←", id="prev-month", n_clicks=0),
-            html.Button("Próximo Mês →", id="next-month", n_clicks=0)
+            html.Button("→", id="next-month", n_clicks=0)
         ], style={"text-align": "center", "margin-top": "20px"}),
 
         html.Div(id="month-name", style={"text-align": "center", "margin-top": "20px"})

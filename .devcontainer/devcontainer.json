@@ -1,0 +1,4 @@
+{
+    "postCreateCommand": "bash script.sh"
+}
+  
