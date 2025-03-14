@@ -75,6 +75,21 @@ if response.status_code == 200:
 
         return pie_data, bar_data, start_of_month.strftime('%B %Y')
 
+    # Função para plotar o gráfico de barras comparativo anual
+    def plot_yearly_comparison():
+        # Agrupar por mês e contar as demandas
+        df['Month'] = df['Criado em'].dt.to_period('M')
+        monthly_counts = df.groupby('Month').size()
+        monthly_error_counts = demandas_erro.groupby(demandas_erro['Criado em'].dt.to_period('M')).size()
+
+        # Gráfico de barras comparativo anual
+        bar_yearly_data = [
+            go.Bar(x=monthly_counts.index.astype(str), y=monthly_counts.values, name="Total de Demandas", marker={"color": "lightblue"}),
+            go.Bar(x=monthly_error_counts.index.astype(str), y=monthly_error_counts.values, name="Erros de Usuário", marker={"color": "red"})
+        ]
+
+        return bar_yearly_data
+
     # Inicializar o servidor Flask
     server = Flask(__name__)
 
@@ -83,26 +98,37 @@ if response.status_code == 200:
 
     # Layout do Dash
     app.layout = html.Div([
-        html.H1("Análise de Demandas do Repositório", style={"text-align": "center"}),
+        html.H1("Análise de Demandas do Repositório", style={"text-align": "center", "color": "#f9b050"}),
 
-        # Gráfico de Pizza
-        dcc.Graph(id="pie-chart"),
-        
-        # Gráfico de Barras
-        dcc.Graph(id="bar-chart"),
+        # Título do gráfico anual
+        html.H2("Gráfico Anual", style={"text-align": "center", "color": "white"}),
+
+        # Gráfico de barras comparativo anual
+        dcc.Graph(id="yearly-bar-chart", style={"backgroundColor": "#f0f2f5"}),
+
+        # Texto do mês
+        html.Div(id="month-name", 
+                 style={"text-align": "center", "color": "white", "font-size": "20px", "margin-top": "20px"}),
 
         # Controles para mudar o mês
         html.Div([
-            html.Button("←", id="prev-month", n_clicks=0),
-            html.Button("→", id="next-month", n_clicks=0)
+            html.Button("←Mês anterior", id="prev-month", n_clicks=0, 
+                    style={"background-color": "#f9b050", "color": "black", "border": "none", "padding": "10px", "font-weight": "bold"}),
+            html.Button("Próximo mês→", id="next-month", n_clicks=0, 
+                    style={"background-color": "#f9b050", "color": "black", "border": "none", "padding": "10px", "font-weight": "bold"})
         ], style={"text-align": "center", "margin-top": "20px"}),
 
-        html.Div(id="month-name", style={"text-align": "center", "margin-top": "20px"})
-    ])
+        # Gráficos lado a lado
+        html.Div([
+            dcc.Graph(id="pie-chart", style={"width": "48%", "display": "inline-block", "backgroundColor": "#f0f2f5"}),
+            dcc.Graph(id="bar-chart", style={"width": "48%", "display": "inline-block", "backgroundColor": "#f0f2f5"})
+        ])
+    ], style={"backgroundColor": "#0e1b26", "padding": "10px 40px"})
 
     # Callback para atualizar os gráficos e o nome do mês
     @app.callback(
-        [Output("pie-chart", "figure"),
+        [Output("yearly-bar-chart", "figure"),
+         Output("pie-chart", "figure"),
          Output("bar-chart", "figure"),
          Output("month-name", "children")],
         [Input("prev-month", "n_clicks"),
@@ -111,9 +137,10 @@ if response.status_code == 200:
     def update_graphs(prev_month_clicks, next_month_clicks):
         current_month_offset = next_month_clicks - prev_month_clicks
         pie_data, bar_data, month_name = plot_month(current_month_offset)
+        bar_yearly_data = plot_yearly_comparison()
         
         # Retornando os gráficos com os dados atualizados
-        return {"data": [pie_data]}, {"data": bar_data}, f"Mes: {month_name}"
+        return {"data": bar_yearly_data}, {"data": [pie_data]}, {"data": bar_data}, f"Mês: {month_name}"
 
     if __name__ == "__main__":
         app.run_server(debug=True)
