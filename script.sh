@@ -2,10 +2,6 @@
 
 echo "Inicializando o aplicativo LAD..."
 
-# Garantir que o pip está atualizado
-echo "Atualizando o pip..."
-pip install --upgrade pip
-
 # Instalando as dependências
 echo "Instalando as bibliotecas necessárias..."
 pip install Flask dash pandas matplotlib requests
