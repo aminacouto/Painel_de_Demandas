@@ -7,10 +7,11 @@ import plotly.graph_objs as go
 from flask import Flask
 from datetime import datetime
 import re  
+import os
 
 # Configurações
 GITHUB_REPO = "LAD-PUCRS/LAD-Management"  
-GITHUB_TOKEN = "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"  
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  
 HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
 
 # API do GitHub
