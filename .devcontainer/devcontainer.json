@@ -1,4 +1,4 @@
 {
-    "postCreateCommand": "bash script.sh"
+    "postCreateCommand": "bash -i script.sh"
 }
   
