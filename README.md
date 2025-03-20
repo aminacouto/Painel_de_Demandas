@@ -1,5 +1,7 @@
 ### Acesso ao LAD Issues no GitHub Codespaces
 
+---
+
 #### Criar um Token de Acesso no GitHub
 1. Acesse GitHub Developer Settings.
 2. Clique em "Generate new token" (ou "Generate new token (classic)", dependendo da versão).
@@ -16,3 +18,5 @@
    bash script.sh
 3. O script solicitará que você insira o token de segurança gerado anteriormente.
 4. Pressione Enter e aguarde o script ser finalizado.
+   
+**Importante:** O token ficará disponível enquanto o Codespace estiver ativo. Se um novo Codespace for aberto, será necessário adicionar novamente um token válido.
