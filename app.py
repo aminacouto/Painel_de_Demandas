@@ -106,6 +106,6 @@ if response.status_code == 200:
     ], style={"backgroundColor": "#0e1b26", "padding": "10px 40px", "height": "100%"})
 
     if __name__ == "__main__":
-        app.run_server(debug=True)
+        app.run(debug=True)
 else:
     print("Erro ao acessar o GitHub:", response.status_code)
