@@ -2,10 +2,6 @@
 
 echo "Inicializando o aplicativo LAD..."
 
-# Configurando o GITHUB_TOKEN
-echo "Configurando o token de autenticação..."
-export GITHUB_TOKEN=$SECRET_TOKEN
-
 # Instalando as dependências
 echo "Instalando as bibliotecas necessárias..."
 pip install Flask dash pandas matplotlib requests
