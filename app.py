@@ -28,7 +28,7 @@ if response.status_code == 200:
             "ID": issue["number"],
             "Título": issue["title"],
             "Status": issue["state"],
-            "Criado em": issue["created_at"][:10],  # Apenas a data (YYYY-MM-DD)
+            "Criado em": issue["created_at"][:10],
             "Labels": ", ".join([label["name"] for label in issue["labels"]])
         })
     
@@ -92,7 +92,13 @@ if response.status_code == 200:
         # Gráfico de barras
         dcc.Graph(
             id="monthly-bar-chart",
-            figure={"data": plot_monthly_comparison()},
+            figure={
+                "data": plot_monthly_comparison(),
+                "layout": go.Layout(
+                    xaxis={"title": "Mês"},
+                    yaxis={"title": "Quantidade de Demandas", "tickmode": "linear", "dtick": 1},
+                    barmode="group"
+                )},
             style={"backgroundColor": "#f0f2f5"}
         ),
 
