@@ -14,7 +14,7 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
 
 # API do GitHub
-URL = f"https://api.github.com/repos/{GITHUB_REPO}/issues"
+URL = f"https://api.github.com/repos/{GITHUB_REPO}/issues?state=all"
 response = requests.get(URL, headers=HEADERS)
 
 if response.status_code == 200:
@@ -47,8 +47,16 @@ if response.status_code == 200:
 
     # Gráfico anual
     def plot_monthly_comparison():
-        monthly_counts = df["Month"].value_counts().sort_index()
-        monthly_error_counts = demandas_erro["Month"].value_counts().reindex(monthly_counts.index, fill_value=0)
+        month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        # Contagem de demandas por mês
+        monthly_counts = df["Month"].value_counts()
+        # Contagem de erros por mês
+        monthly_error_counts = demandas_erro["Month"].value_counts()
+        # Filtrar apenas os meses que possuem dados
+        months_with_data = [m for m in month_order if m in monthly_counts.index]
+        # Reindexar para manter a ordem correta dos meses e preencher valores ausentes com 0
+        monthly_counts = monthly_counts.reindex(months_with_data)
+        monthly_error_counts = monthly_error_counts.reindex(months_with_data, fill_value=0)
 
         bar_monthly_data = [
             go.Bar(
@@ -56,6 +64,7 @@ if response.status_code == 200:
                 y=monthly_counts.values,
                 name="Total de Demandas",
                 marker={"color": "lightblue"},
+                text=monthly_counts.values,
                 width=0.5  
             ),
             go.Bar(
@@ -63,6 +72,7 @@ if response.status_code == 200:
                 y=monthly_error_counts.values,
                 name="Erros de Usuário",
                 marker={"color": "red"},
+                text=monthly_error_counts.values,
                 width=0.5  
             )
         ]
@@ -99,7 +109,7 @@ if response.status_code == 200:
                 "data": plot_monthly_comparison(),
                 "layout": go.Layout(
                     xaxis={"title": "Mês", "tickmode": "array", "tickvals": df["Month"].unique()},
-                    yaxis={"title": "Quantidade de Demandas", "tickmode": "linear", "dtick": 1},
+                    yaxis={"title": "Quantidade de Demandas", "tickmode": "linear", "dtick": 10},
                     barmode="overlay",
                     bargap=0.2,  
                     bargroupgap=0.1 
