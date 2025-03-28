@@ -102,29 +102,38 @@ if response.status_code == 200:
     app.layout = html.Div([
         html.H1("Análise de Demandas", style={"text-align": "center", "color": "#f9b050"}),
 
-        html.H2("Gráfico anual", style={"text-align": "center", "color": "white"}),
+        html.H2("Gráfico Anual", style={"text-align": "center", "color": "white"}),
         dcc.Graph(
             id="monthly-bar-chart",
             figure={
                 "data": plot_monthly_comparison(),
                 "layout": go.Layout(
-                    xaxis={"title": "Mês", "tickmode": "array", "tickvals": df["Month"].unique()},
+                    xaxis={"title": "Mês", "tickmode": "array", "tickvals": df["Month"].unique(), "tickfont": {"family": "Arial", "size": 12, "color": "black", "weight": "bold"}},
                     yaxis={"title": "Quantidade de Demandas", "tickmode": "linear", "dtick": 10},
                     barmode="overlay",
                     bargap=0.2,  
-                    bargroupgap=0.1 
+                    bargroupgap=0.1,
+                    plot_bgcolor="#f0f0f0",
+                    paper_bgcolor="#f0f0f0",
+                    font={"color": "black"}
                 )
             },
-            style={"backgroundColor": "#f0f2f5"}
-        ),
+        
+        ), 
 
-        html.H2("Grupos de usuários", style={"text-align": "center", "color": "white"}),
+        html.H2("Grupos de Usuários", style={"text-align": "center", "color": "white"}),
         dcc.Graph(
             id="pie-chart",
-            figure={"data": plot_pie_chart()},
+            figure={
+                "data": plot_pie_chart(),
+                "layout": go.Layout(
+                    plot_bgcolor="#f0f0f0",
+                    paper_bgcolor="#f0f0f0",
+                    font={"color": "black"}
+                )},
             style={"backgroundColor": "#f0f2f5"}
         )
-    ], style={"backgroundColor": "#0e1b26", "padding": "10px 40px", "height": "100%"})
+    ], style={"padding": "0 40px", "height": "100%"})
 
     if __name__ == "__main__":
         app.run(debug=True)
