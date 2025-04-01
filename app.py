@@ -13,208 +13,230 @@ from dash.dependencies import Input, Output
 GITHUB_REPO = "LAD-PUCRS/LAD-Management"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
+YEAR = 2025
 
-# API do GitHub
-URL = f"https://api.github.com/repos/{GITHUB_REPO}/issues?state=all"
-response = requests.get(URL, headers=HEADERS)
+def fetch_all_issues():
+    issues = []
+    page = 1
+    while True:
+        url = f"https://api.github.com/repos/{GITHUB_REPO}/issues?state=all&per_page=100&page={page}"
+        response = requests.get(url, headers=HEADERS)
 
-if response.status_code == 200:
-    issues = response.json()
+        if response.status_code != 200:
+            print("Erro ao acessar o GitHub:", response.status_code)
+            return []
 
-    # Lista com os dados relevantes
-    data = []
-    for issue in issues:
-        data.append({
-            "ID": issue["number"],
-            "Título": issue["title"],
-            "Status": issue["state"],
-            "Criado em": issue["created_at"][:10],
-            "Labels": ", ".join([label["name"] for label in issue["labels"]]),
-            "URL": issue["html_url"]  
-        })
+        data = response.json()
 
-    # Converte para um DataFrame
-    df = pd.DataFrame(data)
-    df["Criado em"] = pd.to_datetime(df["Criado em"])
+        if not data:  # Se não há mais issues, para de buscar
+            break
 
-    # Filtrar dados para o ano atual
-    current_year = datetime.now().year
-    df = df[df["Criado em"].dt.year == current_year].copy()
+        issues.extend(data)
+        page += 1  # Vai para a próxima página
 
-    # Criar coluna de mês
-    df["Month"] = df["Criado em"].dt.strftime('%b')  
+    return issues
 
-    # Filtrar demandas com label "_USER"
-    demandas_erro = df[df["Labels"].str.contains("_USER", na=False)].copy()
+# Buscar todas as issues
+issues = fetch_all_issues()
 
-    # Gráfico anual
-    def plot_monthly_comparison():
-        month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-        monthly_counts = df["Month"].value_counts()
-        monthly_error_counts = demandas_erro["Month"].value_counts()
-        months_with_data = [m for m in month_order if m in monthly_counts.index]
-        monthly_counts = monthly_counts.reindex(months_with_data)
-        monthly_error_counts = monthly_error_counts.reindex(months_with_data, fill_value=0)
+# Verifica se há issues
+if not issues:
+    print("Nenhuma issue encontrada. Verifique suas credenciais ou repositório.")
+    exit()
 
-        return [
-            go.Bar(
-                x=monthly_counts.index,
-                y=monthly_counts.values,
-                name="Total de Demandas abertas no mês",
-                marker={"color": "lightblue"},
-                text=monthly_counts.values,
-                width=0.5  
-            ),
-            go.Bar(
-                x=monthly_counts.index,
-                y=monthly_error_counts.values,
-                name="Erros de Usuário",
-                marker={"color": "red"},
-                text=monthly_error_counts.values,
-                width=0.5  
-            )
-        ]
+# Lista com os dados relevantes
+data = []
+for issue in issues:
+    data.append({
+        "ID": issue["number"],
+        "Título": issue["title"],
+        "Status": issue["state"],
+        "Criado em": issue["created_at"][:10],
+        "Labels": ", ".join([label["name"] for label in issue["labels"]]),
+        "URL": issue["html_url"]  
+    })
 
-    # Extrair nomes dos grupos das demandas de label "_USER"
-    def extract_names_from_titles(df):
-        pattern = re.compile(r"\[(.*?)\]")
-        return [match.group(1) for title in df["Título"] if (match := pattern.search(title))]
+# Converte para um DataFrame
+df = pd.DataFrame(data)
+df["Criado em"] = pd.to_datetime(df["Criado em"])
 
-    # Função para plotar o gráfico de pizza por mês
-    def plot_pie_chart(month):
-        # Filtrar demandas de erro pelo mês fornecido
-        filtered_data = demandas_erro[demandas_erro["Month"] == month]
-        names = extract_names_from_titles(filtered_data)
-        if names:
-            name_counts = pd.Series(names).value_counts()
-            return [go.Pie(labels=name_counts.index, values=name_counts.values, hole=0.3)]
-        return []  # Retorna um gráfico vazio se não houver dados para o mês
+# Filtrar dados para o ano especificado
+df = df[df["Criado em"].dt.year == YEAR].copy()
 
-    # Inicializar o servidor Flask
-    server = Flask(__name__)
-    app = dash.Dash(__name__, server=server)
+# Criar coluna de mês
+df["Month"] = df["Criado em"].dt.strftime('%b')  
 
-    # Lista fixa com todos os meses do ano
-    all_months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+# Filtrar demandas com label "_USER"
+demandas_erro = df[df["Labels"].str.contains("_USER", na=False)].copy()
 
-    # Obter o mês atual no formato abreviado (e.g., "Jan", "Feb")
-    current_month = datetime.now().strftime('%b')
+# Gráfico anual
+def plot_monthly_comparison():
+    month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    monthly_counts = df["Month"].value_counts()
+    monthly_error_counts = demandas_erro["Month"].value_counts()
+    months_with_data = [m for m in month_order if m in monthly_counts.index]
+    monthly_counts = monthly_counts.reindex(months_with_data)
+    monthly_error_counts = monthly_error_counts.reindex(months_with_data, fill_value=0)
 
-    # Layout do Dash
-    app.layout = html.Div([
-        html.H1("Análise de Demandas", style={"text-align": "center", "color": "#f9b050", "margin": "0", "padding": "20px 0"}),
-
-        html.H3("Comparativo: Total de Demandas vs. Erros de Usuário", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "20px 0 0 0"}),
-        dcc.Graph(
-            id="monthly-bar-chart",
-            figure={
-                "data": plot_monthly_comparison(),
-                "layout": go.Layout(
-                    xaxis={"title": "Mês"},
-                    yaxis={"title": "Quantidade de Demandas"},
-                    barmode="overlay",
-                    plot_bgcolor="#f0f0f0",
-                    paper_bgcolor="#f0f0f0",
-                    font={"color": "black"}
-                )
-            }, 
+    return [
+        go.Bar(
+            x=monthly_counts.index,
+            y=monthly_counts.values,
+            name="Total de Demandas abertas no mês",
+            marker={"color": "lightblue"},
+            text=monthly_counts.values,
+            width=0.5  
         ),
+        go.Bar(
+            x=monthly_counts.index,
+            y=monthly_error_counts.values,
+            name="Erros de Usuário",
+            marker={"color": "red"},
+            text=monthly_error_counts.values,
+            width=0.5  
+        )
+    ]
 
-        html.Div([
-            html.Div([
-                html.H3("Distribuição de Erros de Usuário por Grupo", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "25px 0 0 0"}),
+# Extrair nomes dos grupos das demandas de label "_USER"
+def extract_names_from_titles(df):
+    pattern = re.compile(r"\[(.*?)\]")
+    return [match.group(1) for title in df["Título"] if (match := pattern.search(title))]
 
-                # Dropdown para selecionar o mês
-                dcc.Dropdown(
-                    id="month-dropdown",
-                    options=[{"label": month, "value": month} for month in all_months],
-                    value=current_month, 
-                    style={"background-color": "#f0f0f0", "width": "100%", "margin": "0"},
-                ),
+# Função para plotar o gráfico de pizza por mês
+def plot_pie_chart(month):
+    # Filtrar demandas de erro pelo mês fornecido
+    filtered_data = demandas_erro[demandas_erro["Month"] == month]
+    names = extract_names_from_titles(filtered_data)
+    if names:
+        name_counts = pd.Series(names).value_counts()
+        return [go.Pie(labels=name_counts.index, values=name_counts.values, hole=0.3)]
+    return []  # Retorna um gráfico vazio se não houver dados para o mês
 
-                # Gráfico de pizza
-                dcc.Graph(
-                    id="pie-chart",
-                )
-            ], style={"width": "68%", "display": "inline-block", "vertical-align": "top"}),
+# Inicializar o servidor Flask
+server = Flask(__name__)
+app = dash.Dash(__name__, server=server)
 
-            # Lista de demandas com links para o GitHub
-            html.Div([
-                html.H3("Lista de Demandas Relacionadas a Erros de Usuário", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "25px 0 0 0"}),
+# Lista fixa com todos os meses do ano
+all_months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-                # Adicione um dcc.Store para armazenar os dados filtrados
-                dcc.Store(id="filtered-demands-store"),
+# Obter o mês atual no formato abreviado (e.g., "Jan", "Feb")
+current_month = datetime.now().strftime('%b')
 
-                # Atualize o layout da lista de demandas para usar o id "demand-list"
-                html.Ul(id="demand-list", style={
-                    "background-color": "#f0f0f0",
-                    "padding": "15px",
-                    "margin": "0px",
-                    "color": "black",
-                    "height": "420px",
-                    "overflow-y": "scroll",
-                    "list-style-type": "none",
-                })
-            ], style={"width": "30%", "display": "inline-block", "vertical-align": "top"})
-        ], style={"display": "flex", "justify-content": "space-between"})
-    ], style={"margin": "18px 40px"})
+# Layout do Dash
+app.layout = html.Div([
+    html.H1("Análise de Demandas", style={"text-align": "center", "color": "#f9b050", "margin": "0", "padding": "20px 0"}),
 
-    # Callback para atualizar o gráfico de pizza
-    @app.callback(
-        Output("pie-chart", "figure"),
-        [Input("month-dropdown", "value")]
-    )
-    def update_pie_chart(selected_month):
-        data = plot_pie_chart(selected_month)
-        if not data:  # Verifica se o gráfico está vazio
-            return {
-                "data": [],
-                "layout": go.Layout(
-                    annotations=[
-                        {
-                            "text": "Sem dados disponíveis",
-                            "xref": "paper",
-                            "yref": "paper",
-                            "showarrow": False,
-                            "font": {"size": 20, "color": "gray"},
-                        }
-                    ],
-                    plot_bgcolor="#f0f0f0",
-                    paper_bgcolor="#f0f0f0",
-                    font={"color": "black"},
-                ),
-            }
-        return {
-            "data": data,
+    html.H3("Comparativo: Total de Demandas vs. Erros de Usuário", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "20px 0 0 0"}),
+    dcc.Graph(
+        id="monthly-bar-chart",
+        figure={
+            "data": plot_monthly_comparison(),
             "layout": go.Layout(
+                xaxis={"title": "Mês"},
+                yaxis={"title": "Quantidade de Demandas"},
+                barmode="overlay",
+                plot_bgcolor="#f0f0f0",
+                paper_bgcolor="#f0f0f0",
+                font={"color": "black"}
+            )
+        }, 
+    ),
+
+    html.Div([
+        html.Div([
+            html.H3("Distribuição de Erros de Usuário por Grupo", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "25px 0 0 0"}),
+
+            # Dropdown para selecionar o mês
+            dcc.Dropdown(
+                id="month-dropdown",
+                options=[{"label": month, "value": month} for month in all_months],
+                value=current_month, 
+                style={"background-color": "#f0f0f0", "width": "100%", "margin": "0"},
+            ),
+
+            # Gráfico de pizza
+            dcc.Graph(
+                id="pie-chart",
+            )
+        ], style={"width": "68%", "display": "inline-block", "vertical-align": "top"}),
+
+        # Lista de demandas com links para o GitHub
+        html.Div([
+            html.H3("Lista de Demandas Relacionadas a Erros de Usuário", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "25px 0 0 0"}),
+
+            # Adicione um dcc.Store para armazenar os dados filtrados
+            dcc.Store(id="filtered-demands-store"),
+
+            # Atualize o layout da lista de demandas para usar o id "demand-list"
+            html.Ul(id="demand-list", style={
+                "background-color": "#f0f0f0",
+                "padding": "15px",
+                "margin": "0px",
+                "color": "black",
+                "height": "420px",
+                "overflow-y": "scroll",
+                "list-style-type": "none",
+            })
+        ], style={"width": "30%", "display": "inline-block", "vertical-align": "top"})
+    ], style={"display": "flex", "justify-content": "space-between"})
+], style={"margin": "18px 40px"})
+
+# Callback para atualizar o gráfico de pizza
+@app.callback(
+    Output("pie-chart", "figure"),
+    [Input("month-dropdown", "value")]
+)
+def update_pie_chart(selected_month):
+    data = plot_pie_chart(selected_month)
+    if not data:  # Verifica se o gráfico está vazio
+        return {
+            "data": [],
+            "layout": go.Layout(
+                annotations=[
+                    {
+                        "text": "Sem dados disponíveis",
+                        "xref": "paper",
+                        "yref": "paper",
+                        "showarrow": False,
+                        "font": {"size": 20, "color": "gray"},
+                    }
+                ],
                 plot_bgcolor="#f0f0f0",
                 paper_bgcolor="#f0f0f0",
                 font={"color": "black"},
             ),
         }
+    return {
+        "data": data,
+        "layout": go.Layout(
+            plot_bgcolor="#f0f0f0",
+            paper_bgcolor="#f0f0f0",
+            font={"color": "black"},
+        ),
+    }
 
-    # Callback para atualizar a lista de demandas com base no mês selecionado
-    @app.callback(
-        [Output("filtered-demands-store", "data"),
-         Output("demand-list", "children")],
-        [Input("month-dropdown", "value")]
-    )
-    def update_demand_list(selected_month):
-        # Filtrar demandas de erro pelo mês selecionado
-        filtered_data = demandas_erro[demandas_erro["Month"] == selected_month]
-        if filtered_data.empty:  # Verifica se não há dados
-            return [], [html.Li("Sem dados disponíveis", style={"color": "gray", "font-size": "16px", "text-align": "center"})]
-        # Atualizar a lista de demandas
-        demand_list = [
-            html.Li(
-                html.A(title, href=url, target="_blank", style={"color": "black", "text-decoration": "none", "font-size": "16px"}),
-                style={"margin-bottom": "0px", "padding": "5px", "border-bottom": "1px solid #ccc"}
-            )
-            for title, url in zip(filtered_data["Título"], filtered_data["URL"])
-        ]
-        return filtered_data.to_dict("records"), demand_list
+# Callback para atualizar a lista de demandas com base no mês selecionado
+@app.callback(
+    [Output("filtered-demands-store", "data"),
+        Output("demand-list", "children")],
+    [Input("month-dropdown", "value")]
+)
+def update_demand_list(selected_month):
+    # Filtrar demandas de erro pelo mês selecionado
+    filtered_data = demandas_erro[demandas_erro["Month"] == selected_month]
+    if filtered_data.empty:  # Verifica se não há dados
+        return [], [html.Li("Sem dados disponíveis", style={"color": "gray", "font-size": "16px", "text-align": "center"})]
+    # Atualizar a lista de demandas
+    demand_list = [
+        html.Li(
+            html.A(title, href=url, target="_blank", style={"color": "black", "text-decoration": "none", "font-size": "16px"}),
+            style={"margin-bottom": "0px", "padding": "5px", "border-bottom": "1px solid #ccc"}
+        )
+        for title, url in zip(filtered_data["Título"], filtered_data["URL"])
+    ]
+    return filtered_data.to_dict("records"), demand_list
 
-    if __name__ == "__main__":
-        app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
 else:
     print("Erro ao acessar o GitHub:", response.status_code)
