@@ -82,7 +82,7 @@ def plot_monthly_comparison():
         go.Bar(
             x=monthly_counts.index,
             y=monthly_counts.values,
-            name="Total de Demandas abertas no mês",
+            name="Demandas Abertas no mês",
             marker={"color": "lightblue"},
             text=monthly_counts.values,
             width=0.5  
@@ -133,7 +133,7 @@ app.layout = html.Div([
             "data": plot_monthly_comparison(),
             "layout": go.Layout(
                 xaxis={"title": "Mês"},
-                yaxis={"title": "Quantidade de Demandas"},
+                yaxis={"title": "Quantidade de Demandas Abertas"},
                 barmode="overlay",
                 plot_bgcolor="#f0f0f0",
                 paper_bgcolor="#f0f0f0",
@@ -230,9 +230,11 @@ def update_pie_chart(selected_month):
                     "font": {"size": 20, "color": "gray"},
                 }
             ],
+            showlegend=False,
+            xaxis={"visible": False},
+            yaxis={"visible": False},
             plot_bgcolor="#f0f0f0",
             paper_bgcolor="#f0f0f0",
-            font={"color": "black"},
         )
     }
 
