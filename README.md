@@ -1,3 +1,30 @@
+# LAD Issues Dashboard
+
+O **LAD Issues Dashboard** é uma aplicação interativa desenvolvida com [Dash](https://dash.plotly.com/) para análise de demandas e erros de usuário. Ele permite visualizar gráficos comparativos, gráficos de pizza e listas de demandas relacionadas a erros de usuário, com integração ao GitHub.
+
+---
+
+## Funcionalidades
+
+- **Gráfico Comparativo Anual**: Exibe o total de demandas abertas versus erros de usuário por mês.
+- **Gráfico de Pizza**: Mostra a distribuição de erros de usuário por grupo.
+- **Lista de Demandas**: Exibe uma lista de demandas relacionadas a erros de usuário, com links diretos para o GitHub.
+- **Filtro por Mês**: Permite filtrar os dados por mês ou visualizar todos os meses.
+
+---
+
+## Requisitos
+
+- Python 3.8 ou superior
+- Bibliotecas Python:
+  - `dash`
+  - `plotly`
+  - `pandas`
+  - `flask`
+- Token de acesso ao GitHub (para acessar dados de repositórios privados, se necessário)
+
+---
+
 ### Acesso ao LAD Issues no GitHub Codespaces
 
 ---
@@ -15,7 +42,7 @@
 #### Adicionar o Token ao Codespaces
 1. Criar um novo codespace.
 2. No terminal do Codespace, execute o comando: 
-   bash script.sh
+   `bash script.sh`
 3. O script solicitará que você insira o token de segurança gerado anteriormente.
 4. Pressione Enter e aguarde o script ser finalizado.
    

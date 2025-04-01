@@ -1,5 +1,118 @@
+:root {
+    --title-color: #f9b050;
+    --text-color: #000000;
+    --link-color: #007bff;
+    --bg-color: #0e1b26;
+    --bg-graph-color: #f0f0f0;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
 body {
     margin: 0;
     padding: 0;
-    background-color: #0e1b26;
+    background-color: var(--bg-color);
+}
+/* Estilo geral */
+.container {
+    margin: 18px 40px;
+}
+
+/* Ajuste para o contêiner flexível */
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch; /* Garante que os itens tenham a mesma altura */
+}
+
+/* Estilo para o título principal */
+.h1-title {
+    text-align: center;
+    color: var(--title-color);
+    margin: 0;
+    padding: 6px 0;
+}
+
+/* Estilo para os subtítulos */
+.h3-subtitle {
+    background-color: var(--bg-graph-color);
+    text-align: center;
+    color: var(--text-color);
+    padding: 10px;
+    margin: 20px 0 0 0;
+    padding: 15px 0 10px 0;
+}
+
+/* Estilo para o dropdown */
+.dropdown-style {
+    background-color: var(--bg-graph-color);
+    width: 30%;
+    margin: 0 auto;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.dropdown-style:hover {
+    border-color: var(--link-color);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.dropdown-style:focus {
+    outline: none; 
+    border-color: var(--link-color);
+    box-shadow: 0 0 8px var(--link-color);
+}
+
+.dropdown-container {
+    width: 100%;
+    background-color: var(--bg-graph-color);
+}
+
+/* Estilo para o gráfico de pizza */
+.pie-chart-container {
+    width: 68%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+/* Estilo para a lista de demandas */
+.demand-list-container {
+    width: 30%;
+    display: flex;
+    flex-direction: column; 
+}
+
+.demand-list {
+    background-color: var(--bg-graph-color);
+    padding: 15px;
+    margin: 0px;
+    color: var(--text-color);
+    flex-grow: 1; 
+    overflow-y: scroll;
+    list-style-type: none;
+}
+
+.demand-list li {
+    margin-bottom: 0px;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+
+.demand-list a {
+    color: var(--link-color);
+    text-decoration: none;
+    font-size: 16px;
+}
+.demand-list a:hover {
+    text-decoration: underline;
+}
+
+.demand-list-empty {
+    color: gray;
+    font-size: 16px;
+    text-align: center;
 }

@@ -13,14 +13,14 @@ from dash.dependencies import Input, Output
 GITHUB_REPO = "LAD-PUCRS/LAD-Management"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
-YEAR = 2025
+YEAR = 2025 # Defina o ano desejado
 
 def fetch_all_issues():
     issues = []
     page = 1
     while True:
         url = f"https://api.github.com/repos/{GITHUB_REPO}/issues?state=all&per_page=100&page={page}"
-        response = requests.get(url, headers=HEADERS)
+        response = requests.get(url, headers=HEADERS) 
 
         if response.status_code != 200:
             print("Erro ao acessar o GitHub:", response.status_code)
@@ -124,9 +124,9 @@ current_month = datetime.now().strftime('%b')
 
 # Layout do Dash
 app.layout = html.Div([
-    html.H1(f"Análise de Demandas {YEAR}", style={"text-align": "center", "color": "#f9b050", "margin": "0", "padding": "20px 0"}),
+    html.H1(f"Análise de Demandas {YEAR}", className="h1-title"),
 
-    html.H3("Comparativo: Total de Demandas vs. Erros de Usuário", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "20px 0 0 0"}),
+    html.H3("Comparativo: Total de Demandas vs. Erros de Usuário", className="h3-subtitle"),
     dcc.Graph(
         id="monthly-bar-chart",
         figure={
@@ -144,7 +144,7 @@ app.layout = html.Div([
 
     html.Div([
         html.Div([
-            html.H3("Distribuição de Erros de Usuário por Grupo", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "25px 0 0 0"}),
+            html.H3("Distribuição de Erros de Usuário por Grupo", className="h3-subtitle"),
 
             # Dropdown para selecionar o mês
             html.Div(
@@ -153,46 +153,28 @@ app.layout = html.Div([
                         id="month-dropdown",
                         options=[{"label": "Todos os meses", "value": "all"}] + [{"label": month, "value": month} for month in all_months],
                         value=current_month,
-                        style={
-                            "background-color": "#f0f0f0",  
-                            "width": "50%", 
-                            "margin": "0 auto",
-                            "font-size": "14px",  
-                            
-                        },
+                        className="dropdown-style"
                     )
-                ],
-                style={
-                    "background-color": "#f0f0f0",  
-                },
-            ),
+                ], className="dropdown-container"
+            ), 
 
             # Gráfico de pizza
             dcc.Graph(
                 id="pie-chart",
             )
-        ], style={"width": "68%", "display": "inline-block", "vertical-align": "top"}),
+        ], className="pie-chart-container"),
 
         # Lista de demandas com links para o GitHub
         html.Div([
-            html.H3("Lista de Demandas Relacionadas a Erros de Usuário", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "25px 0 0 0"}),
+            html.H3("Lista de Demandas Relacionadas a Erros de Usuário", className="h3-subtitle"),
 
-            # Adicione um dcc.Store para armazenar os dados filtrados
+            # dcc.Store para armazenar os dados filtrados
             dcc.Store(id="filtered-demands-store"),
 
-            # Atualize o layout da lista de demandas para usar o id "demand-list"
-            html.Ul(id="demand-list", style={
-                "background-color": "#f0f0f0",
-                "padding": "15px",
-                "margin": "0px",
-                "color": "black",
-                "height": "420px",
-                "overflow-y": "scroll",
-                "list-style-type": "none",
-            })
-        ], style={"width": "30%", "display": "inline-block", "vertical-align": "top"})
-    ], style={"display": "flex", "justify-content": "space-between"})
-], style={"margin": "18px 40px"})
+            html.Ul(id="demand-list", className="demand-list")
+        ], className="demand-list-container")
+    ], className="flex-container")
+], className="container")
 
 # Callback para atualizar o gráfico de pizza
 @app.callback(
@@ -223,7 +205,7 @@ def update_pie_chart(selected_month):
         "layout": go.Layout(
             annotations=[
                 {
-                    "text": "Sem dados disponíveis",
+                    "text": "Nenhuma demanda especial registrada no mês selecionado",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -253,12 +235,12 @@ def update_demand_list(selected_month):
         filtered_data = demandas_erro[demandas_erro["Month"] == selected_month]
 
     if filtered_data.empty:  # Verifica se não há dados
-        return [], [html.Li("Sem dados disponíveis", style={"color": "gray", "font-size": "16px", "text-align": "center"})]
+        return [], [html.Li("Nenhuma demanda especial registrada no mês selecionado", style={"color": "gray", "font-size": "16px", "text-align": "center"})]
 
     # Atualizar a lista de demandas
     demand_list = [
         html.Li(
-            html.A(title, href=url, target="_blank", style={"color": "black", "text-decoration": "none", "font-size": "16px"}),
+            html.A(title, href=url, target="_blank", style={"color": "#007bff", "text-decoration": "underline", "font-size": "16px"}, title="Clique para abrir no GitHub"),
             style={"margin-bottom": "0px", "padding": "5px", "border-bottom": "1px solid #ccc"}
         )
         for title, url in zip(filtered_data["Título"], filtered_data["URL"])
@@ -268,4 +250,4 @@ def update_demand_list(selected_month):
 if __name__ == "__main__":
     app.run(debug=True)
 else:
-    print("Erro ao acessar o GitHub:", response.status_code)
+    print("Erro ao acessar o GitHub")
