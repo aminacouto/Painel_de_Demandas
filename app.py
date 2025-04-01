@@ -124,7 +124,7 @@ current_month = datetime.now().strftime('%b')
 
 # Layout do Dash
 app.layout = html.Div([
-    html.H1("Análise de Demandas", style={"text-align": "center", "color": "#f9b050", "margin": "0", "padding": "20px 0"}),
+    html.H1(f"Análise de Demandas {YEAR}", style={"text-align": "center", "color": "#f9b050", "margin": "0", "padding": "20px 0"}),
 
     html.H3("Comparativo: Total de Demandas vs. Erros de Usuário", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "20px 0 0 0"}),
     dcc.Graph(
@@ -147,11 +147,24 @@ app.layout = html.Div([
             html.H3("Distribuição de Erros de Usuário por Grupo", style={"background-color": "#f0f0f0", "text-align": "center", "color": "#black", "padding": "10px", "margin": "25px 0 0 0"}),
 
             # Dropdown para selecionar o mês
-            dcc.Dropdown(
-                id="month-dropdown",
-                options=[{"label": month, "value": month} for month in all_months],
-                value=current_month, 
-                style={"background-color": "#f0f0f0", "width": "100%", "margin": "0"},
+            html.Div(
+                [
+                    dcc.Dropdown(
+                        id="month-dropdown",
+                        options=[{"label": "Todos os meses", "value": "all"}] + [{"label": month, "value": month} for month in all_months],
+                        value=current_month,
+                        style={
+                            "background-color": "#f0f0f0",  
+                            "width": "50%", 
+                            "margin": "0 auto",
+                            "font-size": "14px",  
+                            
+                        },
+                    )
+                ],
+                style={
+                    "background-color": "#f0f0f0",  
+                },
             ),
 
             # Gráfico de pizza
@@ -187,45 +200,59 @@ app.layout = html.Div([
     [Input("month-dropdown", "value")]
 )
 def update_pie_chart(selected_month):
-    data = plot_pie_chart(selected_month)
-    if not data:  # Verifica se o gráfico está vazio
+    if selected_month == "all":
+        # Use todos os meses
+        filtered_data = demandas_erro
+    else:
+        # Filtrar pelo mês selecionado
+        filtered_data = demandas_erro[demandas_erro["Month"] == selected_month]
+
+    names = extract_names_from_titles(filtered_data)
+    if names:
+        name_counts = pd.Series(names).value_counts()
         return {
-            "data": [],
+            "data": [go.Pie(labels=name_counts.index, values=name_counts.values, hole=0.3)],
             "layout": go.Layout(
-                annotations=[
-                    {
-                        "text": "Sem dados disponíveis",
-                        "xref": "paper",
-                        "yref": "paper",
-                        "showarrow": False,
-                        "font": {"size": 20, "color": "gray"},
-                    }
-                ],
                 plot_bgcolor="#f0f0f0",
                 paper_bgcolor="#f0f0f0",
-                font={"color": "black"},
-            ),
+                font={"color": "black"}
+            )
         }
     return {
-        "data": data,
+        "data": [],
         "layout": go.Layout(
+            annotations=[
+                {
+                    "text": "Sem dados disponíveis",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {"size": 20, "color": "gray"},
+                }
+            ],
             plot_bgcolor="#f0f0f0",
             paper_bgcolor="#f0f0f0",
             font={"color": "black"},
-        ),
+        )
     }
 
 # Callback para atualizar a lista de demandas com base no mês selecionado
 @app.callback(
     [Output("filtered-demands-store", "data"),
-        Output("demand-list", "children")],
+     Output("demand-list", "children")],
     [Input("month-dropdown", "value")]
 )
 def update_demand_list(selected_month):
-    # Filtrar demandas de erro pelo mês selecionado
-    filtered_data = demandas_erro[demandas_erro["Month"] == selected_month]
+    if selected_month == "all":
+        # Use todos os meses
+        filtered_data = demandas_erro
+    else:
+        # Filtrar pelo mês selecionado
+        filtered_data = demandas_erro[demandas_erro["Month"] == selected_month]
+
     if filtered_data.empty:  # Verifica se não há dados
         return [], [html.Li("Sem dados disponíveis", style={"color": "gray", "font-size": "16px", "text-align": "center"})]
+
     # Atualizar a lista de demandas
     demand_list = [
         html.Li(
