@@ -1,15 +1,15 @@
 # LAD Issues Dashboard
 
-O **LAD Issues Dashboard** é uma aplicação interativa desenvolvida com [Dash](https://dash.plotly.com/) para análise de demandas e erros de usuário. Ele permite visualizar gráficos comparativos, gráficos de pizza e listas de demandas relacionadas a erros de usuário, com integração ao GitHub.
+O **LAD Issues Dashboard** é uma aplicação interativa desenvolvida com [Dash](https://dash.plotly.com/) para análise de demandas do laboratório. Ele utiliza a API do GitHub para acessar as issues de um repositório específico, permitindo visualizar gráficos comparativos, gráficos de pizza e uma lista com as demandas especiais, identificadas por Labels criadas no GitHub, com integração direta à plataforma.
 
 ---
 
 ## Funcionalidades
 
-- **Gráfico Comparativo Anual**: Exibe o total de demandas abertas versus erros de usuário por mês.
-- **Gráfico de Pizza**: Mostra a distribuição de erros de usuário por grupo.
-- **Lista de Demandas**: Exibe uma lista de demandas relacionadas a erros de usuário, com links diretos para o GitHub.
-- **Filtro por Mês**: Permite filtrar os dados por mês ou visualizar todos os meses.
+- **Gráfico Comparativo Anual**: Apresenta uma visão geral do total de demandas abertas e demandas especiais ao longo dos meses.
+- **Gráfico de Pizza**: Exibe a distribuição percentual de demandas especiais separadas por grupo, facilitando a análise de categorias mais impactadas.
+- **Lista de Demandas**: Mostra uma lista detalhada das demandas especiais, com links diretos para o GitHub.
+- **Filtro por Mês**: Permite filtrar os dados por um mês específico ou visualizar informações de todos os meses, oferecendo flexibilidade na análise.
 
 ---
 
@@ -41,7 +41,7 @@ O **LAD Issues Dashboard** é uma aplicação interativa desenvolvida com [Dash]
 
 #### Adicionar o Token ao Codespaces
 1. Criar um novo codespace.
-2. No terminal do Codespace, execute o comando: 
+2. No terminal do Codespace, execute o comando:  
    `bash script.sh`
 3. O script solicitará que você insira o token de segurança gerado anteriormente.
 4. Pressione Enter e aguarde o script ser finalizado.

@@ -9,6 +9,15 @@ import re
 import os
 from dash.dependencies import Input, Output
 
+# Configuração de cores para o tema
+COLORS = {
+    "background": "#192734",
+    "text": "white",
+    "bar1": "#2c6e9e", 
+    "bar2": "#e74c3c", 
+    "link": "#007bff",
+}
+
 # Configurações
 GITHUB_REPO = "LAD-PUCRS/LAD-Management"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -83,7 +92,7 @@ def plot_monthly_comparison():
             x=monthly_counts.index,
             y=monthly_counts.values,
             name="Demandas Abertas no mês",
-            marker={"color": "lightblue"},
+            marker={"color": COLORS["bar1"]},
             text=monthly_counts.values,
             width=0.5  
         ),
@@ -91,7 +100,7 @@ def plot_monthly_comparison():
             x=monthly_counts.index,
             y=monthly_error_counts.values,
             name="Erros de Usuário",
-            marker={"color": "red"},
+            marker={"color": COLORS["bar2"]},
             text=monthly_error_counts.values,
             width=0.5  
         )
@@ -132,12 +141,12 @@ app.layout = html.Div([
         figure={
             "data": plot_monthly_comparison(),
             "layout": go.Layout(
-                xaxis={"title": "Mês"},
-                yaxis={"title": "Quantidade de Demandas Abertas"},
+                xaxis={"title": "Mês", "color": "white"},
+                yaxis={"title": "Quantidade de Demandas Abertas", "color": "white"},
                 barmode="overlay",
-                plot_bgcolor="#f0f0f0",
-                paper_bgcolor="#f0f0f0",
-                font={"color": "black"}
+                plot_bgcolor=COLORS["background"],
+                paper_bgcolor=COLORS["background"],
+                font={"color": COLORS["text"]},
             )
         }, 
     ),
@@ -195,9 +204,9 @@ def update_pie_chart(selected_month):
         return {
             "data": [go.Pie(labels=name_counts.index, values=name_counts.values, hole=0.3)],
             "layout": go.Layout(
-                plot_bgcolor="#f0f0f0",
-                paper_bgcolor="#f0f0f0",
-                font={"color": "black"}
+                plot_bgcolor=COLORS["background"],
+                paper_bgcolor=COLORS["background"],
+                font={"color": COLORS["text"]}
             )
         }
     return {
@@ -215,8 +224,8 @@ def update_pie_chart(selected_month):
             showlegend=False,
             xaxis={"visible": False},
             yaxis={"visible": False},
-            plot_bgcolor="#f0f0f0",
-            paper_bgcolor="#f0f0f0",
+            plot_bgcolor=COLORS["background"],
+            paper_bgcolor=COLORS["background"],
         )
     }
 
@@ -240,8 +249,14 @@ def update_demand_list(selected_month):
     # Atualizar a lista de demandas
     demand_list = [
         html.Li(
-            html.A(title, href=url, target="_blank", style={"color": "#007bff", "text-decoration": "underline", "font-size": "16px"}, title="Clique para abrir no GitHub"),
-            style={"margin-bottom": "0px", "padding": "5px", "border-bottom": "1px solid #ccc"}
+            html.A(
+                title, 
+                href=url, 
+                target="_blank", 
+                className="demand-list-a",  
+                title="Clique para abrir no GitHub"
+            ),
+            className="demand-list-li"  
         )
         for title, url in zip(filtered_data["Título"], filtered_data["URL"])
     ]
