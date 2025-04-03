@@ -96,7 +96,7 @@ def plot_monthly_comparison():
                 name="Demandas Abertas no mês",
                 marker={"color": COLORS["bar1"]},
                 text=monthly_counts.values,
-                width=0.4,
+                width=0.6,
                 hovertemplate="<b>Mês:</b> %{x}<br><b>Demandas Abertas:</b> %{y}<extra></extra>"
             ),
             go.Bar(
@@ -105,7 +105,7 @@ def plot_monthly_comparison():
                 name="Erros de Usuário",
                 marker={"color": COLORS["bar2"]},
                 text=monthly_error_counts.values,
-                width=0.4,
+                width=0.6,
                 hovertemplate="<b>Mês:</b> %{x}<br><b>Erros de Usuário:</b> %{y}<extra></extra>"
             )
         ],
@@ -213,6 +213,7 @@ def update_pie_chart(selected_month):
                     labels=name_counts.index,
                     values=name_counts.values,
                     hole=0.3,
+                    textinfo="percent+value",
                     hovertemplate="<b>Grupo:</b> %{label}<br><b>Quantidade:</b> %{value}<br><b>Percentual:</b> %{percent}<extra></extra>"
                 )
             ],
