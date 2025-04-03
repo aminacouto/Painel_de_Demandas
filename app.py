@@ -16,6 +16,7 @@ COLORS = {
     "bar1": "#2c6e9e", 
     "bar2": "#e74c3c", 
     "link": "#007bff",
+    "gray": "gray",
 }
 
 # Configurações
@@ -87,24 +88,37 @@ def plot_monthly_comparison():
     monthly_counts = monthly_counts.reindex(months_with_data)
     monthly_error_counts = monthly_error_counts.reindex(months_with_data, fill_value=0)
 
-    return [
-        go.Bar(
-            x=monthly_counts.index,
-            y=monthly_counts.values,
-            name="Demandas Abertas no mês",
-            marker={"color": COLORS["bar1"]},
-            text=monthly_counts.values,
-            width=0.5  
-        ),
-        go.Bar(
-            x=monthly_counts.index,
-            y=monthly_error_counts.values,
-            name="Erros de Usuário",
-            marker={"color": COLORS["bar2"]},
-            text=monthly_error_counts.values,
-            width=0.5  
+    return {
+        "data": [
+            go.Bar(
+                x=monthly_counts.index,
+                y=monthly_counts.values,
+                name="Demandas Abertas no mês",
+                marker={"color": COLORS["bar1"]},
+                text=monthly_counts.values,
+                width=0.4,
+                hovertemplate="<b>Mês:</b> %{x}<br><b>Demandas Abertas:</b> %{y}<extra></extra>"
+            ),
+            go.Bar(
+                x=monthly_counts.index,
+                y=monthly_error_counts.values,
+                name="Erros de Usuário",
+                marker={"color": COLORS["bar2"]},
+                text=monthly_error_counts.values,
+                width=0.4,
+                hovertemplate="<b>Mês:</b> %{x}<br><b>Erros de Usuário:</b> %{y}<extra></extra>"
+            )
+        ],
+        "layout": go.Layout(
+            xaxis={"title": "Mês", "color": COLORS["text"]},
+            yaxis={"title": "Quantidade de Demandas Abertas", "color": COLORS["text"]},
+            barmode="overlay",
+            plot_bgcolor=COLORS["background"],
+            paper_bgcolor=COLORS["background"],
+            font={"color": COLORS["text"]},
+            hovermode="closest",
         )
-    ]
+    }
 
 # Extrair nomes dos grupos das demandas de label "_USER"
 def extract_names_from_titles(df):
@@ -128,7 +142,7 @@ app = dash.Dash(__name__, server=server)
 # Lista fixa com todos os meses do ano
 all_months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-# Obter o mês atual no formato abreviado (e.g., "Jan", "Feb")
+# Obter o mês atual 
 current_month = datetime.now().strftime('%b')
 
 # Layout do Dash
@@ -138,17 +152,7 @@ app.layout = html.Div([
     html.H3("Comparativo: Total de Demandas vs. Erros de Usuário", className="h3-subtitle"),
     dcc.Graph(
         id="monthly-bar-chart",
-        figure={
-            "data": plot_monthly_comparison(),
-            "layout": go.Layout(
-                xaxis={"title": "Mês", "color": "white"},
-                yaxis={"title": "Quantidade de Demandas Abertas", "color": "white"},
-                barmode="overlay",
-                plot_bgcolor=COLORS["background"],
-                paper_bgcolor=COLORS["background"],
-                font={"color": COLORS["text"]},
-            )
-        }, 
+        figure=plot_monthly_comparison(), 
     ),
 
     html.Div([
@@ -160,7 +164,7 @@ app.layout = html.Div([
                 [
                     dcc.Dropdown(
                         id="month-dropdown",
-                        options=[{"label": "Todos os meses", "value": "all"}] + [{"label": month, "value": month} for month in all_months],
+                        options=[{"label": "Visão Geral", "value": "all"}] + [{"label": month, "value": month} for month in all_months],
                         value=current_month,
                         className="dropdown-style"
                     )
@@ -201,12 +205,32 @@ def update_pie_chart(selected_month):
     names = extract_names_from_titles(filtered_data)
     if names:
         name_counts = pd.Series(names).value_counts()
+        total_demandas = name_counts.sum()  # Calcula o total de demandas
+
         return {
-            "data": [go.Pie(labels=name_counts.index, values=name_counts.values, hole=0.3)],
+            "data": [
+                go.Pie(
+                    labels=name_counts.index,
+                    values=name_counts.values,
+                    hole=0.3,
+                    hovertemplate="<b>Grupo:</b> %{label}<br><b>Quantidade:</b> %{value}<br><b>Percentual:</b> %{percent}<extra></extra>"
+                )
+            ],
             "layout": go.Layout(
                 plot_bgcolor=COLORS["background"],
                 paper_bgcolor=COLORS["background"],
-                font={"color": COLORS["text"]}
+                font={"color": COLORS["text"]},
+                annotations=[
+                    {
+                        "text": f"Total: {total_demandas}",
+                        "font": {"size": 16, "color": COLORS["text"]},
+                        "showarrow": False,
+                        "xref": "paper",
+                        "yref": "paper",
+                        "x": 0.5,
+                        "y": 0.5,
+                    }
+                ]
             )
         }
     return {
@@ -218,7 +242,7 @@ def update_pie_chart(selected_month):
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
-                    "font": {"size": 20, "color": "gray"},
+                    "font": {"size": 20, "color": COLORS["gray"] },
                 }
             ],
             showlegend=False,
@@ -244,7 +268,7 @@ def update_demand_list(selected_month):
         filtered_data = demandas_erro[demandas_erro["Month"] == selected_month]
 
     if filtered_data.empty:  # Verifica se não há dados
-        return [], [html.Li("Nenhuma demanda especial registrada no mês selecionado", style={"color": "gray", "font-size": "16px", "text-align": "center"})]
+        return [], [html.Li("Nenhuma demanda especial registrada no mês selecionado", style={"color": COLORS["gray"], "font-size": "16px", "text-align": "center"})]
 
     # Atualizar a lista de demandas
     demand_list = [
