@@ -7,7 +7,10 @@ from flask import Flask
 from datetime import datetime
 import re  
 import os
+from dotenv import load_dotenv
 from dash.dependencies import Input, Output
+
+load_dotenv()
 
 # Configuração de cores para o tema
 COLORS = {
@@ -20,10 +23,10 @@ COLORS = {
 }
 
 # Configurações
-GITHUB_REPO = "LAD-PUCRS/LAD-Management"
+GITHUB_REPO = "aminacouto/lad"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
-YEAR = 2025 # Defina o ano desejado
+YEAR = 2026 # Definir ano atual / acrescentar um select de ano
 
 def fetch_all_issues():
     issues = []
