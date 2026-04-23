@@ -108,6 +108,25 @@ PORT=8050
 
 ---
 
+## Deploy no Render
+
+1. Faça push do repositório para o GitHub.
+2. Crie um novo serviço Web no Render e aponte para este repositório.
+3. Use estas configurações:
+   - `buildCommand`: `pip install -r requirements.txt`
+   - `startCommand`: `python app.py`
+4. Configure estas variáveis de ambiente no painel do Render:
+   - `GITHUB_REPO`
+   - `GITHUB_TOKEN`
+   - `YEAR=2026`
+   - `DEBUG=False`
+   - `HOST=0.0.0.0`
+5. Se desejar, use o arquivo `render.yaml` para gerenciar a configuração do serviço.
+
+> O Render define `PORT` automaticamente, então o app irá usar o valor do ambiente em produção.
+
+---
+
 ## Arquitetura
 
 ### Separação de Responsabilidades

@@ -16,7 +16,7 @@ COLORS = {
 }
 
 # Configurações do GitHub
-GITHUB_REPO = os.getenv("GITHUB_REPO", "aminacouto/lad")
+GITHUB_REPO = os.getenv("GITHUB_REPO", "aminacouto/projeto_dashboard")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 YEAR = int(os.getenv("YEAR", "2026"))
 

@@ -8,7 +8,7 @@ from flask import Flask
 
 from callbacks import register_callbacks
 from components import create_main_layout
-from config import DEBUG, HOST, PORT, MONTH_ORDER, GITHUB_REPO, GITHUB_TOKEN, LABEL_FILTER, TITLE_PATTERN
+from config import DEBUG, HOST, PORT, MONTH_ORDER, GITHUB_REPO, GITHUB_TOKEN, LABEL_FILTER, TITLE_PATTERN, YEAR
 from data_processor import DataProcessor
 from github_client import GitHubClient
 
@@ -34,7 +34,7 @@ def main() -> None:
 
     # Inicializar processador
     processor = DataProcessor(
-        year=2026,
+        year=YEAR,
         label_filter=LABEL_FILTER,
         title_pattern=TITLE_PATTERN,
     )
