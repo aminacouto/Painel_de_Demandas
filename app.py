@@ -19,46 +19,34 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ── Inicialização no escopo global (obrigatório para o gunicorn) ───────────────
 
-def main() -> None:
-    """Função principal da aplicação."""
-    logger.info("Iniciando Dashboard")
+logger.info("Iniciando Dashboard")
 
-    # Buscar issues do GitHub
-    github_client = GitHubClient(repo=GITHUB_REPO, token=GITHUB_TOKEN)
-    issues = github_client.fetch_all_issues()
+github_client = GitHubClient(repo=GITHUB_REPO, token=GITHUB_TOKEN)
+issues = github_client.fetch_all_issues()
 
-    if not issues:
-        logger.error("Nenhuma issue encontrada. Verifique suas credenciais ou repositório.")
-        sys.exit(1)
+if not issues:
+    logger.error("Nenhuma issue encontrada. Verifique suas credenciais ou repositório.")
+    sys.exit(1)
 
-    # Inicializar processador
-    processor = DataProcessor(
-        year=YEAR,
-        label_filter=LABEL_FILTER,
-        title_pattern=TITLE_PATTERN,
-    )
+processor = DataProcessor(
+    year=YEAR,
+    label_filter=LABEL_FILTER,
+    title_pattern=TITLE_PATTERN,
+)
 
-    # Inicializar aplicação Dash
-    server = Flask(__name__)
-    app = dash.Dash(__name__, server=server)
+flask_server = Flask(__name__)
+app = dash.Dash(__name__, server=flask_server)
+app.layout = create_main_layout(all_months=MONTH_ORDER)
 
-    # Criar layout
-    app.layout = create_main_layout(
-        all_months=MONTH_ORDER,
-    )
+register_callbacks(app=app, issues=issues, processor=processor)
 
-    # Registrar callbacks
-    register_callbacks(
-        app=app,
-        issues=issues,
-        processor=processor,
-    )
+# Expõe o servidor Flask — o gunicorn chama `app:server`
+server = app.server
 
-    # Executar aplicação
-    logger.info(f"Iniciando servidor em http://{HOST}:{PORT}")
-    app.run(debug=DEBUG, host=HOST, port=PORT)
-
+# ── Execução local ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    main()
+    logger.info(f"Iniciando servidor em http://{HOST}:{PORT}")
+    app.run(debug=DEBUG, host=HOST, port=PORT)
