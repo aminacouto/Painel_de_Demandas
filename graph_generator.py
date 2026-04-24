@@ -116,6 +116,62 @@ class GraphGenerator:
         }
 
     @staticmethod
+    def create_status_comparison_chart(
+        df: pd.DataFrame,
+        selected_month: str,
+    ) -> Dict[str, Any]:
+        """
+        Cria gráfico comparativo de demandas abertas e fechadas.
+
+        Args:
+            df: DataFrame com issues filtradas pelo ano
+            selected_month: Mês selecionado ou 'all'
+
+        Returns:
+            Dicionário com dados e layout do gráfico
+        """
+        if selected_month != "all":
+            df = df[df["Month"] == selected_month]
+
+        total_opened = len(df)
+        closed_count = int((df["Status"] == "closed").sum())
+        subtitle = "Visão Geral" if selected_month == "all" else f"Mês: {selected_month}"
+
+        return {
+            "data": [
+                go.Bar(
+                    x=[total_opened],
+                    y=["Demandas"],
+                    orientation="h",
+                    name="Abertas (total)",
+                    marker={"color": COLORS["bar1"]},
+                    text=[total_opened],
+                    textposition="auto",
+                    hovertemplate="<b>Total Geral:</b> %{x}<extra></extra>",
+                ),
+                go.Bar(
+                    x=[closed_count],
+                    y=["Demandas"],
+                    orientation="h",
+                    name="Fechadas",
+                    marker={"color": COLORS["bar2"]},
+                    text=[closed_count],
+                    textposition="auto",
+                    hovertemplate="<b>Fechadas:</b> %{x}<extra></extra>",
+                )
+            ],
+            "layout": go.Layout(
+                title={"text": f" {subtitle}", "x": 0.5},
+                xaxis={"title": "Quantidade", "color": COLORS["text"], "rangemode": "tozero"},
+                yaxis={"title": "", "color": COLORS["text"]},
+                barmode="overlay",
+                plot_bgcolor=COLORS["background"],
+                paper_bgcolor=COLORS["background"],
+                font={"color": COLORS["text"]},
+            ),
+        }
+
+    @staticmethod
     def create_empty_pie_chart() -> Dict[str, Any]:
         """
         Cria gráfico de pizza vazio (sem dados).

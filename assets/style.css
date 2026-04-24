@@ -121,6 +121,14 @@ body::before {
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
+.status-comparison-container {
+    margin-top: 24px;
+}
+
+#status-comparison-chart {
+    min-height: 360px;
+}
+
 .flex-container {
     display: flex;
     gap: 24px;
@@ -154,13 +162,20 @@ body::before {
     min-height: 440px;
 }
 
+.pie-chart-container,
+.demand-list-container {
+    min-height: 560px;
+}
+
 .pie-chart-container {
     flex: 1.7;
     min-width: 360px;
+    display: flex;
+    flex-direction: column;
 }
 
 .demand-list-container {
-    flex: 0.95;
+    flex: 0.9;
     min-width: 340px;
     display: flex;
     flex-direction: column;
@@ -176,6 +191,7 @@ body::before {
     flex: 1;
     overflow-y: auto;
     list-style: none;
+    max-height: none;
 }
 
 .demand-list-li {
@@ -234,20 +250,134 @@ body::before {
     background: rgba(124, 134, 255, 0.55);
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1280px) {
+    .container {
+        max-width: 90%;
+    }
+
+    .pie-chart-container,
+    .demand-list-container {
+        min-height: 480px;
+    }
+
+    #monthly-bar-chart,
+    #pie-chart {
+        min-height: 380px;
+    }
+}
+
+@media (max-width: 1024px) {
+    body {
+        padding: 24px 24px;
+    }
+
     .flex-container {
         flex-direction: column;
+        gap: 20px;
     }
 
     .pie-chart-container,
     .demand-list-container {
         min-width: 100%;
+        min-height: 420px;
+    }
+
+    #monthly-bar-chart,
+    #pie-chart {
+        min-height: 340px;
+    }
+
+    .h1-title {
+        font-size: 2.4rem;
+    }
+
+    .section-card,
+    .chart-card {
+        padding: 20px;
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     body {
         padding: 18px 16px;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    .h1-title {
+        font-size: 2rem;
+        text-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .title-with-selector {
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .year-dropdown-style,
+    .dropdown-style {
+        min-width: 180px;
+        max-width: 260px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+
+    .h3-subtitle {
+        font-size: 0.9rem;
+        padding: 12px 16px;
+        margin: 0 0 14px;
+    }
+
+    .flex-container {
+        gap: 16px;
+    }
+
+    .pie-chart-container,
+    .demand-list-container {
+        min-height: 360px;
+    }
+
+    #monthly-bar-chart,
+    #pie-chart {
+        min-height: 300px;
+    }
+
+    #status-comparison-chart {
+        min-height: 300px;
+    }
+
+    .status-comparison-container {
+        margin-top: 18px;
+    }
+
+    .section-card,
+    .chart-card {
+        padding: 18px;
+        border-radius: 24px;
+    }
+
+    .demand-list {
+        padding: 14px;
+        border-radius: 20px;
+    }
+
+    .demand-list-li {
+        margin-bottom: 12px;
+        padding: 12px 10px;
+        border-radius: 14px;
+    }
+
+    .demand-list-a {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 14px 12px;
     }
 
     .container {
@@ -255,16 +385,93 @@ body::before {
     }
 
     .h1-title {
-        font-size: 2.2rem;
+        font-size: 1.6rem;
+        letter-spacing: -0.03em;
+        text-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    }
+
+    .title-with-selector {
+        gap: 12px;
+        margin-bottom: 18px;
     }
 
     .year-selector-container {
         width: 100%;
         justify-content: center;
+        gap: 8px;
     }
 
-    .title-with-selector {
-        text-align: left;
+    .year-selector-container label {
+        font-size: 0.85rem;
     }
 
+    .year-dropdown-style,
+    .dropdown-style {
+        min-width: 150px;
+        max-width: 100%;
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+
+    .h3-subtitle {
+        font-size: 0.8rem;
+        padding: 10px 12px;
+        letter-spacing: 0.1em;
+        margin: 0 0 12px;
+    }
+
+    .flex-container {
+        gap: 12px;
+        flex-direction: column;
+    }
+
+    .pie-chart-container,
+    .demand-list-container {
+        min-height: 300px;
+        min-width: 100%;
+    }
+
+    #monthly-bar-chart,
+    #pie-chart {
+        min-height: 260px;
+    }
+
+    #status-comparison-chart {
+        min-height: 260px;
+    }
+
+    .status-comparison-container {
+        margin-top: 14px;
+    }
+
+    .section-card,
+    .chart-card {
+        padding: 14px;
+        border-radius: 20px;
+        margin-bottom: 16px;
+    }
+
+    .chart-card {
+        margin-bottom: 16px;
+    }
+
+    .demand-list {
+        padding: 12px;
+        border-radius: 16px;
+    }
+
+    .demand-list-li {
+        margin-bottom: 10px;
+        padding: 10px 8px;
+        border-radius: 12px;
+    }
+
+    .demand-list-a {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .demand-list::-webkit-scrollbar {
+        width: 6px;
+    }
 }

@@ -92,6 +92,51 @@ def register_callbacks(
         return processed_data, monthly_chart
 
     @app.callback(
+        Output("status-comparison-chart", "figure"),
+        [Input("month-dropdown", "value"), Input("year-dropdown", "value")],
+    )
+    def update_status_comparison_chart(selected_month: str, selected_year: int) -> Dict[str, Any]:
+        """
+        Atualiza gráfico comparativo de demandas abertas e fechadas.
+
+        Args:
+            selected_month: Mês selecionado
+            selected_year: Ano selecionado
+
+        Returns:
+            Figura do gráfico de status de demandas
+        """
+        new_processor = DataProcessor(
+            year=selected_year,
+            label_filter=processor.label_filter,
+            title_pattern=processor.title_pattern,
+        )
+
+        df = new_processor.process_issues(issues)
+
+        if df.empty:
+            return {
+                "data": [],
+                "layout": {
+                    "annotations": [
+                        {
+                            "text": "Nenhuma issue disponível para o período selecionado",
+                            "xref": "paper",
+                            "yref": "paper",
+                            "showarrow": False,
+                            "font": {"size": 18, "color": COLORS["gray"]},
+                        }
+                    ],
+                    "xaxis": {"visible": False},
+                    "yaxis": {"visible": False},
+                    "plot_bgcolor": COLORS["background"],
+                    "paper_bgcolor": COLORS["background"],
+                },
+            }
+
+        return GraphGenerator.create_status_comparison_chart(df=df, selected_month=selected_month)
+
+    @app.callback(
         Output("pie-chart", "figure"),
         [Input("month-dropdown", "value"), Input("processed-data-store", "data"), Input("year-dropdown", "value")],
     )

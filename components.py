@@ -70,6 +70,11 @@ def create_pie_chart() -> dcc.Graph:
     return dcc.Graph(id="pie-chart")
 
 
+def create_status_comparison_chart() -> dcc.Graph:
+    """Cria gráfico comparativo de demandas abertas e fechadas."""
+    return dcc.Graph(id="status-comparison-chart")
+
+
 def create_pie_chart_section(all_months: List[str]) -> html.Div:
     """
     Cria seção de gráfico de pizza com dropdown.
@@ -87,6 +92,17 @@ def create_pie_chart_section(all_months: List[str]) -> html.Div:
             create_pie_chart(),
         ],
         className="pie-chart-container section-card",
+    )
+
+
+def create_status_comparison_section() -> html.Div:
+    """Cria seção do gráfico comparativo de status de demandas."""
+    return html.Div(
+        [
+            html.H3("Comparativo: Total Demandas Abertas vs. Fechadas", className="h3-subtitle"),
+            create_status_comparison_chart(),
+        ],
+        className="status-comparison-container section-card",
     )
 
 
@@ -131,6 +147,7 @@ def create_main_layout(
                 ],
                 className="flex-container",
             ),
+            create_status_comparison_section(),
         ],
         className="container",
     )
