@@ -1,228 +1,83 @@
 # Painel de Demandas
 
-O **Painel de Demandas** é uma aplicação interativa desenvolvida com [Dash](https://dash.plotly.com/) para análise de demandas do laboratório. Ela utiliza a API do GitHub para acessar as issues de um repositório específico, permitindo visualizar gráficos comparativos, gráficos de pizza e uma lista com as demandas especiais, identificadas por Labels criadas no GitHub, com integração direta à plataforma.
+O **Painel de Demandas** é uma aplicação web interativa desenvolvida com Dash para análise e monitoramento de demandas a partir de *issues* do GitHub.
+
+🔗 **Acesse a aplicação:**  
+[https://dashboard-ihqb.onrender.com/](https://dashboard-ihqb.onrender.com/)
 
 ---
 
-## Funcionalidades
+## 📊 Sobre o projeto
 
-- **Gráfico Comparativo Anual**: Apresenta uma visão geral do total de demandas abertas e demandas especiais ao longo dos meses.
-- **Gráfico de Pizza**: Exibe a distribuição percentual de demandas especiais separadas por grupo, facilitando a análise de categorias mais impactadas.
-- **Lista de Demandas**: Mostra uma lista detalhada das demandas especiais, com links diretos para o GitHub.
-- **Filtro por Mês**: Permite filtrar os dados por um mês específico ou visualizar informações de todos os meses, oferecendo flexibilidade na análise.
+A aplicação consome dados diretamente da API do GitHub e transforma *issues* em informações visuais, permitindo acompanhar o volume e a categorização das demandas ao longo do tempo.
 
----
-
-## Requisitos
-
-- Python 3.8 ou superior
-- Bibliotecas Python (veja `requirements.txt`)
-- Token de acesso ao GitHub (para acessar dados de repositórios privados, se necessário)
+O objetivo é facilitar a tomada de decisão e dar visibilidade sobre as demandas mais relevantes.
 
 ---
 
-## Instalação e Configuração
+## 🚀 Funcionalidades
 
-### 1. Clonar o Repositório
-```bash
-git clone <url-do-repositorio>
-cd nome-do-seu-projeto
-```
+- 📈 **Gráfico comparativo anual**  
+  Visualização da quantidade de demandas abertas e demandas especiais por mês
 
-### 2. Criar Arquivo de Configuração
-```bash
-cp .env.example .env
-```
+- 🥧 **Gráfico de pizza**  
+  Distribuição das demandas especiais por categoria (*labels*)
 
-### 3. Adicionar Token do GitHub
-Edite o arquivo `.env` e adicione seu token:
-```
-GITHUB_TOKEN=seu_token_aqui
-```
+- 📋 **Lista de demandas**  
+  Exibição detalhada com link direto para cada issue no GitHub
 
-### 4. Instalar Dependências
-```bash
-pip install -r requirements.txt
-```
-
-### 5. Executar a Aplicação
-```bash
-python app.py
-```
-
-A aplicação será acessível em `http://127.0.0.1:8050`
+- 📅 **Filtro por mês**  
+  Permite análise específica ou visão geral dos dados
 
 ---
 
-## Geração de Token do GitHub
+## 🧠 Como funciona
 
-1. Acesse [GitHub Developer Settings](https://github.com/settings/tokens)
-2. Clique em "Generate new token (classic)"
-3. Dê um nome para o token (ex: LAD-Token)
-4. Defina a data de expiração
-5. Em Scopes, selecione `repo` (acesso a repositórios)
-6. Clique em "Generate token"
-7. Copie o token e adicione ao arquivo `.env`
-
-**Nota:** O token não será visível novamente após geração. Armazene-o com segurança.
+1. As *issues* são coletadas via API do GitHub  
+2. Os dados são processados e organizados  
+3. As demandas especiais são identificadas por *labels*  
+4. Os dados são exibidos em gráficos interativos com Dash/Plotly  
 
 ---
 
-## Estrutura do Projeto
+## 🛠️ Tecnologias utilizadas
 
-```
-<nome-do-seu-projeto>/
-├── app.py                 # Aplicação principal
-├── config.py              # Configurações e variáveis de ambiente
-├── github_client.py       # Cliente GitHub API
-├── data_processor.py      # Processamento de dados
-├── graph_generator.py     # Geração de gráficos
-├── components.py          # Componentes Dash
-├── callbacks.py           # Callbacks interativos
-├── requirements.txt       # Dependências Python
-├── .env.example           # Exemplo de variáveis de ambiente
-├── .gitignore             # Arquivos ignorados pelo Git
-├── script.sh              # Script de setup (Linux/macOS)
-├── assets/
-│   └── style.css          # Estilos CSS personalizados
-└── README.md              # Este arquivo
-```
+- Python  
+- Dash  
+- Plotly  
+- Pandas  
+- GitHub API  
 
 ---
 
-## Variáveis de Ambiente
+## 🏗️ Arquitetura
 
-Configure no arquivo `.env`:
+O projeto segue uma estrutura modular:
 
-```env
-# GitHub
-GITHUB_REPO=aminacouto/lad
-GITHUB_TOKEN=seu_token
-
-# Aplicação
-YEAR=2026
-DEBUG=True
-HOST=127.0.0.1
-PORT=8050
-```
+- `github_client.py`: integração com a API do GitHub  
+- `data_processor.py`: tratamento e organização dos dados  
+- `graph_generator.py`: geração dos gráficos  
+- `components.py`: componentes visuais  
+- `callbacks.py`: interatividade  
+- `app.py`: inicialização da aplicação  
 
 ---
 
-## Deploy no Render
+## ✨ Destaques técnicos
 
-1. Faça push do repositório para o GitHub.
-2. Crie um novo serviço Web no Render e aponte para este repositório.
-3. Use estas configurações:
-   - `buildCommand`: `pip install -r requirements.txt`
-   - `startCommand`: `python app.py`
-4. Configure estas variáveis de ambiente no painel do Render:
-   - `GITHUB_REPO`
-   - `GITHUB_TOKEN`
-   - `YEAR=2026`
-   - `DEBUG=False`
-   - `HOST=0.0.0.0`
-5. Se desejar, use o arquivo `render.yaml` para gerenciar a configuração do serviço.
-
-> O Render define `PORT` automaticamente, então o app irá usar o valor do ambiente em produção.
+- Código modular e organizado  
+- Separação clara de responsabilidades  
+- Uso de variáveis de ambiente  
+- Tipagem com type hints  
+- Tratamento de erros e logging  
 
 ---
 
-## Arquitetura
+## 🎯 Objetivo
 
-### Separação de Responsabilidades
+Este projeto foi desenvolvido com foco em:
 
-- **config.py**: Centraliza todas as configurações e constantes
-- **github_client.py**: Gerencia comunicação com a API do GitHub
-- **data_processor.py**: Processa e transforma dados em DataFrames
-- **graph_generator.py**: Cria gráficos Plotly
-- **components.py**: Define componentes visuais Dash
-- **callbacks.py**: Implementa interatividade da interface
-- **app.py**: Orquestra todos os módulos e inicia a aplicação
-
-### Type Hints e Docstrings
-
-Todos os módulos incluem:
-- ✅ Type hints para argumentos e retornos
-- ✅ Docstrings descritivas
-- ✅ Logging apropriado
-- ✅ Tratamento de erros robusto
-
----
-
-## Melhorias Implementadas
-
-### ✨ Refatorações
-
-1. **Modularização**: Código separado em 8 módulos especializados
-2. **Configuração Externa**: Variáveis de ambiente em `.env`
-3. **Type Safety**: Anotações de tipo em todas as funções
-4. **Logging**: Sistema de logs estruturado
-5. **Tratamento de Erros**: Validações e exceções apropriadas
-6. **Documentação**: Docstrings e comments claros
-7. **Código Limpo**: Remoção de duplicação e variáveis globais
-8. **Versionamento**: requirements.txt com versões fixas
-
-### 📦 Arquivos Novos
-
-- `.env.example`: Template de configuração
-- `.gitignore`: Padrões de exclusão melhorados
-- `requirements.txt`: Dependências do projeto
-- Módulos especializados: github_client, data_processor, graph_generator, components, callbacks
-
----
-
-## Desenvolvimento
-
-### Executar em Modo Debug
-
-```bash
-export DEBUG=True
-python app.py
-```
-
-### Ver Logs
-
-```bash
-# Linux/macOS
-python app.py 2>&1 | tee app.log
-
-# Windows
-python app.py > app.log 2>&1
-```
-
-### Adicionar Novas Dependências
-
-```bash
-pip install nova-biblioteca
-pip freeze > requirements.txt
-```
-
----
-
-## Troubleshooting
-
-### Erro: "Nenhuma issue encontrada"
-- Verifique se o token está correto
-- Confirme se o repositório está correto em `GITHUB_TOKEN`
-- Verifique a conectividade com a internet
-
-### Erro: "ModuleNotFoundError"
-- Instale as dependências: `pip install -r requirements.txt`
-- Verifique se está usando o ambiente virtual correto
-
-### Porta já em uso
-- Mude a porta em `.env`: `PORT=8051`
-- Ou encerre o processo usando a porta
-
----
-
-## Suporte
-
-Para questões ou sugestões, abra uma issue no repositório.
-
----
-
-## Licença
-
-Este projeto é fornecido como está. Consulte a licença do repositório para mais informações.
-
+- Praticar integração com APIs  
+- Trabalhar com visualização de dados  
+- Aplicar boas práticas de organização de código  
+- Construir uma aplicação web interativa com Python  
