@@ -1,19 +1,23 @@
 """Callbacks da aplicação Dash."""
 
+import logging
 from typing import List, Dict, Any, Tuple
 
 import pandas as pd
-from dash import Output, Input
+from dash import Output, Input, State
 from dash import html
 
-from config import COLORS, MONTH_ORDER
+from config import COLORS, MONTH_ORDER, GITHUB_REPO, GITHUB_TOKEN, LABEL_FILTER, TITLE_PATTERN, YEAR
 from data_processor import DataProcessor
 from graph_generator import GraphGenerator
+from github_client import GitHubClient
+
+logger = logging.getLogger(__name__)
 
 
 def register_callbacks(
     app,
-    issues: List[Dict[str, Any]],
+    initial_issues: List[Dict[str, Any]],
     processor: DataProcessor,
 ) -> None:
     """
@@ -21,27 +25,64 @@ def register_callbacks(
 
     Args:
         app: Aplicação Dash
-        issues: Lista bruta de issues do GitHub
+        initial_issues: Lista inicial de issues (para inicialização)
         processor: Processador de dados
     """
+
+    # Callback para atualizar issues do GitHub periodicamente
+    @app.callback(
+        Output("raw-issues-store", "data"),
+        Input("issues-update-interval", "n_intervals"),
+        State("raw-issues-store", "data"),
+        prevent_initial_call=False,
+    )
+    def fetch_issues_periodically(n_intervals: int, stored_issues: Dict) -> Dict:
+        """
+        Busca issues do GitHub periodicamente e armazena no Store.
+        Dispara na inicialização e a cada intervalo de 5 minutos.
+
+        Args:
+            n_intervals: Número de vezes que o intervalo foi acionado
+            stored_issues: Issues armazenadas anteriormente
+
+        Returns:
+            Dicionário com as issues armazenadas
+        """
+        try:
+            github_client = GitHubClient(repo=GITHUB_REPO, token=GITHUB_TOKEN)
+            issues = github_client.fetch_all_issues()
+            
+            if not issues:
+                logger.warning("Nenhuma issue encontrada do GitHub")
+                return stored_issues or {"issues": initial_issues}
+            
+            logger.info(f"Issues atualizadas: {len(issues)} issues encontradas (n_intervals={n_intervals})")
+            return {"issues": issues}
+        except Exception as e:
+            logger.error(f"Erro ao buscar issues: {e}")
+            return stored_issues or {"issues": initial_issues}
 
     @app.callback(
         [
             Output("processed-data-store", "data"),
             Output("monthly-bar-chart", "figure"),
         ],
-        Input("year-dropdown", "value"),
+        [Input("year-dropdown", "value"), Input("raw-issues-store", "data")],
     )
-    def update_data_by_year(selected_year: int) -> Tuple[Dict, Dict]:
+    def update_data_by_year(selected_year: int, raw_issues_data: Dict) -> Tuple[Dict, Dict]:
         """
-        Atualiza dados quando o ano é alterado.
+        Atualiza dados quando o ano é alterado ou issues são atualizadas.
 
         Args:
             selected_year: Ano selecionado
+            raw_issues_data: Dados brutos de issues do Store
 
         Returns:
             Tupla com dados processados e figura do gráfico
         """
+        # Extrair issues do Store
+        issues = raw_issues_data.get("issues", initial_issues) if raw_issues_data else initial_issues
+        
         # Criar novo processador com o ano selecionado
         new_processor = DataProcessor(
             year=selected_year,
@@ -89,23 +130,28 @@ def register_callbacks(
             "year": selected_year,
         }
 
+
         return processed_data, monthly_chart
 
     @app.callback(
         Output("status-comparison-chart", "figure"),
-        [Input("month-dropdown", "value"), Input("year-dropdown", "value")],
+        [Input("month-dropdown", "value"), Input("year-dropdown", "value"), Input("raw-issues-store", "data")],
     )
-    def update_status_comparison_chart(selected_month: str, selected_year: int) -> Dict[str, Any]:
+    def update_status_comparison_chart(selected_month: str, selected_year: int, raw_issues_data: Dict) -> Dict[str, Any]:
         """
         Atualiza gráfico comparativo de demandas abertas e fechadas.
 
         Args:
             selected_month: Mês selecionado
             selected_year: Ano selecionado
+            raw_issues_data: Dados brutos de issues do Store
 
         Returns:
             Figura do gráfico de status de demandas
         """
+        # Extrair issues do Store
+        issues = raw_issues_data.get("issues", initial_issues) if raw_issues_data else initial_issues
+        
         new_processor = DataProcessor(
             year=selected_year,
             label_filter=processor.label_filter,

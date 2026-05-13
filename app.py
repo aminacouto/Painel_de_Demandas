@@ -24,11 +24,11 @@ logger = logging.getLogger(__name__)
 logger.info("Iniciando Dashboard")
 
 github_client = GitHubClient(repo=GITHUB_REPO, token=GITHUB_TOKEN)
-issues = github_client.fetch_all_issues()
+initial_issues = github_client.fetch_all_issues()
 
-if not issues:
-    logger.error("Nenhuma issue encontrada. Verifique suas credenciais ou repositório.")
-    sys.exit(1)
+if not initial_issues:
+    logger.warning("Nenhuma issue encontrada na inicialização. Continuando com issues vazias.")
+    initial_issues = []
 
 processor = DataProcessor(
     year=YEAR,
@@ -40,7 +40,7 @@ flask_server = Flask(__name__)
 app = dash.Dash(__name__, server=flask_server)
 app.layout = create_main_layout(all_months=MONTH_ORDER)
 
-register_callbacks(app=app, issues=issues, processor=processor)
+register_callbacks(app=app, initial_issues=initial_issues, processor=processor)
 
 # Expõe o servidor Flask — o gunicorn chama `app:server`
 server = app.server

@@ -1,6 +1,7 @@
 """Configurações da aplicação."""
 
 import os
+#from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,7 +19,10 @@ COLORS = {
 # Configurações do GitHub
 GITHUB_REPO = os.getenv("GITHUB_REPO", "aminacouto/projeto_dashboard")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
+#para dados simulados
 YEAR = int(os.getenv("YEAR", "2026"))
+#para dados reais
+#YEAR = int(os.getenv("YEAR", str(datetime.now().year)))
 
 # Configurações da aplicação
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"

@@ -1,5 +1,6 @@
 """Processamento e tratamento de dados de issues."""
 
+import calendar
 import logging
 import re
 from typing import List, Dict, Any, Pattern
@@ -68,8 +69,8 @@ class DataProcessor:
             logger.warning(f"Nenhuma issue encontrada para o ano {self.year}")
             return df
 
-        # Adiciona coluna de mês
-        df["Month"] = df["Criado em"].dt.strftime("%b")
+        # Adiciona coluna de mês usando abreviações fixas em inglês para evitar dependência de localidade
+        df["Month"] = df["Criado em"].dt.month.map(lambda month: calendar.month_abbr[month])
 
         logger.info(f"Processadas {len(df)} issues para o ano {self.year}")
 

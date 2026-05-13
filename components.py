@@ -134,6 +134,8 @@ def create_main_layout(
         [
             dcc.Store(id="raw-issues-store"),
             dcc.Store(id="processed-data-store"),
+            # Intervalo de 5 minutos (300000 ms) para atualizar as issues
+            dcc.Interval(id="issues-update-interval", interval=300000, n_intervals=0),
             create_title(),
             html.H3(
                 "Comparativo: Total de Demandas vs. Erros de Usuário",
