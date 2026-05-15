@@ -30,6 +30,7 @@ HOST = os.getenv("HOST", "127.0.0.1")
 PORT = int(os.getenv("PORT", "8050"))
 
 # Padrões
-LABEL_FILTER = "_USER"
+LABEL_FILTER = r"_USER|infraestrutura|vm|rede|urgente|especial|manutenção|backup"
+SPECIAL_LABELS = ["infraestrutura", "vm", "rede", "urgente", "especial", "manutenção", "backup"]
 MONTH_ORDER = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 TITLE_PATTERN = r"\[(.*?)\]"

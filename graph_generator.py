@@ -31,38 +31,64 @@ class GraphGenerator:
         Returns:
             Dicionário com dados e layout do gráfico
         """
-        monthly_counts = df["Month"].value_counts()
-        monthly_error_counts = special_demands["Month"].value_counts()
-        months_with_data = [m for m in month_order if m in monthly_counts.index]
+        monthly_counts = df["Month"].value_counts().reindex(month_order, fill_value=0)
 
-        monthly_counts = monthly_counts.reindex(months_with_data)
-        monthly_error_counts = monthly_error_counts.reindex(months_with_data, fill_value=0)
+        label_series = (
+            special_demands["Labels"]
+            .str.split(", ")
+            .explode()
+            .str.strip()
+            .to_frame(name="Label")
+        )
+        label_series["Month"] = special_demands.loc[label_series.index, "Month"].values
+
+        monthly_label_counts = (
+            label_series.groupby(["Month", "Label"]).size().unstack(fill_value=0).reindex(index=month_order, fill_value=0)
+        )
+
+        # Ordenar labels por tamanho total (menor primeiro para ficar no topo)
+        labels = monthly_label_counts.columns.tolist()
+        label_totals = monthly_label_counts.sum().to_dict()
+        sorted_labels = sorted(labels, key=lambda x: label_totals[x])
+        
+        label_colors = ["#e74c3c", "#f39c12", "#2ecc71", "#9b59b6", "#3498db", "#1abc9c", "#e67e22"]
+
+        # Começar com o Total Demandas (base da pilha)
+        traces = []
+        
+        # Adicionar categorias especiais (menores primeiro, ficarão no topo)
+        for idx, label in enumerate(sorted_labels):
+            traces.append(
+                go.Bar(
+                    x=month_order,
+                    y=monthly_label_counts[label].values,
+                    name=label.title(),
+                    marker={"color": label_colors[idx % len(label_colors)]},
+                    text=monthly_label_counts[label].values,
+                    width=0.6,
+                    hovertemplate=f"<b>Mês:</b> %{{x}}<br><b>{label.title()}:</b> %{{y}}<extra></extra>",
+                )
+            )
+        
+        # Adicionar Total Demandas por último (ficará no topo da pilha)
+        traces.append(
+            go.Bar(
+                x=month_order,
+                y=monthly_counts.values,
+                name="Total Demandas Abertas",
+                marker={"color": COLORS["bar1"]},
+                text=monthly_counts.values,
+                width=0.6,
+                hovertemplate="<b>Mês:</b> %{x}<br><b>Total:</b> %{y}<extra></extra>",
+            )
+        )
 
         return {
-            "data": [
-                go.Bar(
-                    x=monthly_counts.index,
-                    y=monthly_counts.values,
-                    name="Demandas Abertas no mês",
-                    marker={"color": COLORS["bar1"]},
-                    text=monthly_counts.values,
-                    width=0.6,
-                    hovertemplate="<b>Mês:</b> %{x}<br><b>Demandas Abertas:</b> %{y}<extra></extra>",
-                ),
-                go.Bar(
-                    x=monthly_counts.index,
-                    y=monthly_error_counts.values,
-                    name="Erros de Usuário",
-                    marker={"color": COLORS["bar2"]},
-                    text=monthly_error_counts.values,
-                    width=0.6,
-                    hovertemplate="<b>Mês:</b> %{x}<br><b>Erros de Usuário:</b> %{y}<extra></extra>",
-                ),
-            ],
+            "data": traces,
             "layout": go.Layout(
                 xaxis={"title": "Mês", "color": COLORS["text"]},
-                yaxis={"title": "Quantidade de Demandas Abertas", "color": COLORS["text"]},
-                barmode="overlay",
+                yaxis={"title": "Quantidade de Demandas", "color": COLORS["text"]},
+                barmode="stack",
                 plot_bgcolor=COLORS["background"],
                 paper_bgcolor=COLORS["background"],
                 font={"color": COLORS["text"]},

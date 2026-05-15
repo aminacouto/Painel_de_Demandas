@@ -126,7 +126,7 @@ def register_callbacks(
 
         # Armazenar apenas os campos necessários para os callbacks
         processed_data = {
-            "special_demands": special_demands[["Título", "URL", "Month"]].to_dict("records"),
+            "special_demands": special_demands[["Título", "URL", "Month", "Labels"]].to_dict("records"),
             "year": selected_year,
         }
 
@@ -184,9 +184,19 @@ def register_callbacks(
 
     @app.callback(
         Output("pie-chart", "figure"),
-        [Input("month-dropdown", "value"), Input("processed-data-store", "data"), Input("year-dropdown", "value")],
+        [
+            Input("month-dropdown", "value"),
+            Input("label-dropdown", "value"),
+            Input("processed-data-store", "data"),
+            Input("year-dropdown", "value"),
+        ],
     )
-    def update_pie_chart(selected_month: str, processed_data: Dict, selected_year: int) -> Dict[str, Any]:
+    def update_pie_chart(
+        selected_month: str,
+        selected_label: str,
+        processed_data: Dict,
+        selected_year: int,
+    ) -> Dict[str, Any]:
         """
         Atualiza gráfico de pizza ao mudar o mês.
 
@@ -208,16 +218,19 @@ def register_callbacks(
         else:
             filtered_data = special_demands[special_demands["Month"] == selected_month]
 
+        if selected_label != "all":
+            filtered_data = filtered_data[filtered_data["Labels"].str.contains(selected_label, na=False)]
+
         if filtered_data.empty:
             return GraphGenerator.create_empty_pie_chart()
 
-        names = processor.extract_names_from_titles(filtered_data)
+        groups = processor.extract_names_from_titles(filtered_data)
+        group_counts = pd.Series(groups).value_counts()
 
-        if names:
-            name_counts = pd.Series(names).value_counts()
+        if not group_counts.empty:
             return GraphGenerator.create_pie_chart(
-                labels=name_counts.index.tolist(),
-                values=name_counts.values.tolist(),
+                labels=group_counts.index.tolist(),
+                values=group_counts.values.tolist(),
             )
 
         return GraphGenerator.create_empty_pie_chart()
@@ -227,18 +240,25 @@ def register_callbacks(
             Output("filtered-demands-store", "data"),
             Output("demand-list", "children"),
         ],
-        [Input("month-dropdown", "value"), Input("processed-data-store", "data"), Input("year-dropdown", "value")],
+        [
+            Input("month-dropdown", "value"),
+            Input("label-dropdown", "value"),
+            Input("processed-data-store", "data"),
+            Input("year-dropdown", "value"),
+        ],
     )
     def update_demand_list(
         selected_month: str,
+        selected_label: str,
         processed_data: Dict,
         selected_year: int,
     ) -> Tuple[List[Dict[str, Any]], List[html.Li]]:
         """
-        Atualiza lista de demandas ao mudar o mês.
+        Atualiza lista de demandas ao mudar o mês ou o label.
 
         Args:
             selected_month: Mês selecionado
+            selected_label: Label selecionado
             processed_data: Dados processados armazenados
 
         Returns:
@@ -264,10 +284,13 @@ def register_callbacks(
         else:
             filtered_data = special_demands[special_demands["Month"] == selected_month]
 
+        if selected_label != "all":
+            filtered_data = filtered_data[filtered_data["Labels"].str.contains(selected_label, na=False)]
+
         if filtered_data.empty:
             return [], [
                 html.Li(
-                    "Nenhuma demanda especial registrada no mês selecionado",
+                    "Nenhuma demanda especial registrada no filtro selecionado",
                     style={
                         "color": COLORS["gray"],
                         "font-size": "16px",

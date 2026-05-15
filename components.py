@@ -53,6 +53,7 @@ def create_month_dropdown(all_months: List[str]) -> html.Div:
 
     return html.Div(
         [
+            html.Label("Filtrar por Mês:", htmlFor="month-dropdown"),
             dcc.Dropdown(
                 id="month-dropdown",
                 options=[{"label": "Visão Geral", "value": "all"}]
@@ -75,20 +76,60 @@ def create_status_comparison_chart() -> dcc.Graph:
     return dcc.Graph(id="status-comparison-chart")
 
 
-def create_pie_chart_section(all_months: List[str]) -> html.Div:
+def create_label_dropdown(labels: List[str]) -> html.Div:
     """
-    Cria seção de gráfico de pizza com dropdown.
+    Cria dropdown para seleção de label de demanda especial.
+
+    Args:
+        labels: Lista de labels especiais
+
+    Returns:
+        Div contendo o dropdown
+    """
+    return html.Div(
+        [
+            html.Label("Filtrar por Tipo de Demanda:", htmlFor="label-dropdown"),
+            dcc.Dropdown(
+                id="label-dropdown",
+                options=[
+                    {"label": "Todos", "value": "all"}
+                ] + [
+                    {
+                        "label": label.upper() if label.lower() == "vm" else label if label.startswith("_") else label.title(),
+                        "value": label,
+                    }
+                    for label in labels
+                ],
+                value="all",
+                clearable=False,
+                className="dropdown-style",
+            ),
+        ],
+        className="dropdown-container",
+    )
+
+
+def create_pie_chart_section(all_months: List[str], special_labels: List[str]) -> html.Div:
+    """
+    Cria seção de gráfico de pizza com dropdowns.
 
     Args:
         all_months: Lista de todos os meses
+        special_labels: Lista de labels de demandas especiais
 
     Returns:
         Div contendo a seção
     """
     return html.Div(
         [
-            html.H3("Distribuição de Erros de Usuário por Grupo", className="h3-subtitle"),
-            create_month_dropdown(all_months),
+            html.H3("Distribuição de Grupos de Demandas Especiais", className="h3-subtitle"),
+            html.Div(
+                [
+                    create_month_dropdown(all_months),
+                    create_label_dropdown(special_labels),
+                ],
+                className="filter-row",
+            ),
             create_pie_chart(),
         ],
         className="pie-chart-container section-card",
@@ -110,7 +151,7 @@ def create_demand_list_section() -> html.Div:
     """Cria seção de lista de demandas."""
     return html.Div(
         [
-            html.H3("Lista de Demandas Relacionadas a Erros de Usuário", className="h3-subtitle"),
+            html.H3("Lista de Demandas Especiais", className="h3-subtitle"),
             dcc.Store(id="filtered-demands-store"),
             html.Ul(id="demand-list", className="demand-list"),
         ],
@@ -120,12 +161,14 @@ def create_demand_list_section() -> html.Div:
 
 def create_main_layout(
     all_months: List[str],
+    special_labels: List[str],
 ) -> html.Div:
     """
     Cria layout principal da aplicação.
 
     Args:
         all_months: Lista de todos os meses
+        special_labels: Lista de labels de demandas especiais
 
     Returns:
         Div contendo o layout principal
@@ -138,13 +181,13 @@ def create_main_layout(
             dcc.Interval(id="issues-update-interval", interval=300000, n_intervals=0),
             create_title(),
             html.H3(
-                "Comparativo: Total de Demandas vs. Erros de Usuário",
+                "Comparativo: Total de Demandas vs. Demandas Especiais",
                 className="h3-subtitle",
             ),
             dcc.Graph(id="monthly-bar-chart", className="chart-card"),
             html.Div(
                 [
-                    create_pie_chart_section(all_months),
+                    create_pie_chart_section(all_months, special_labels),
                     create_demand_list_section(),
                 ],
                 className="flex-container",

@@ -40,13 +40,13 @@ class DataProcessor:
             logger.warning("Nenhuma issue fornecida")
             return pd.DataFrame()
 
-        # Converte para lista de dicionários
+        # Converte para lista de dicionários usando a data simulada quando presente
         data = [
             {
                 "ID": issue["number"],
                 "Título": issue["title"],
                 "Status": issue["state"],
-                "Criado em": issue["created_at"][:10],
+                "Criado em": self._extract_simulated_date(issue),
                 "Labels": ", ".join([label["name"] for label in issue["labels"]]),
                 "URL": issue["html_url"],
             }
@@ -86,7 +86,7 @@ class DataProcessor:
         Returns:
             DataFrame com demandas especiais
         """
-        special_demands = df[df["Labels"].str.contains(self.label_filter, na=False)].copy()
+        special_demands = df[df["Labels"].str.contains(self.label_filter, na=False, regex=True)].copy()
         logger.info(f"Encontradas {len(special_demands)} demandas especiais")
         return special_demands
 
@@ -107,3 +107,23 @@ class DataProcessor:
                 names.append(match.group(1))
 
         return names
+
+    def _extract_simulated_date(self, issue: Dict[str, Any]) -> str:
+        """
+        Extrai a data simulada do corpo da issue.
+
+        Se a issue contiver uma linha no formato "Data simulada: YYYY-MM-DD",
+        essa data é utilizada. Caso contrário, usa a data de criação real.
+
+        Args:
+            issue: Dicionário da issue.
+
+        Returns:
+            str: Data no formato YYYY-MM-DD.
+        """
+        body = issue.get("body", "") or ""
+        match = re.search(r"Data simulada:\s*(\d{4}-\d{2}-\d{2})", body)
+        if match:
+            return match.group(1)
+        return issue["created_at"][:10]
+
